@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--使用Spring来创建对象，这些都成为bean
+     类型 变量名 = new 变量();
+      id = 变量名
+      class = new 的对象：
+      property 相当于给对象的属性设置一个值
+
+    -->
+    <bean id="student" class="com.shisan.pojo.Student">
+        <property name="name" value="十三"/>
+    </bean>
+</beans>
