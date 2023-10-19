@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--普通注入-->
+    <bean id="address" class="com.shisan.pojo.Address">
+        <property name="address" value="河南信阳"/>
+    </bean>
+
+    <bean id="student" class="com.shisan.pojo.Student">
+        <property name="name" value="徐十三"/>
+        <!--Bean注入，ref-->
+        <property name="address" ref="address"/>
+
+        <!--数组-->
+        <property name="books">
+            <array>
+                <value>《数据结构》</value>
+                <value>《计算机组成原理》</value>
+                <value>《计算机网络》</value>
+                <value>《操作心态》</value>
+            </array>
+        </property>
+
+        <!--list-->
+        <property name="hobbies">
+            <list>
+                <value>singing</value>
+                <value>jump</value>
+                <value>rapping</value>
+                <value>basketball</value>
+            </list>
+        </property>
+
+        <!--map-->
+        <property name="card">
+            <map>
+                <entry key="eat" value="吃排骨"></entry>
+                <entry key="sleep" value="睡大觉"></entry>
+            </map>
+        </property>
+
+        <!--set-->
+        <property name="games">
+            <set>
+                <value>王者荣耀</value>
+                <value>部落冲突</value>
+                <value>金铲铲</value>
+            </set>
+        </property>
+
+        <!--null-->
+        <property name="wife">
+            <null/>
+        </property>
+
+        <!--info-->
+        <property name="info">
+            <props>
+                <prop key="学号">022300200240</prop>
+                <prop key="班级">20级软件工程2班</prop>
+                <prop key="性别">男</prop>
+            </props>
+        </property>
+    </bean>
+
+
+</beans>
