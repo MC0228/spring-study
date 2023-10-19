@@ -123,11 +123,14 @@ bean = 对象 id= 变量名 class = new的对象 property相当于给对象中�
 ## 4.IOC创建对象的方式
 
 1.使用无参构造创建对象，默认
+
 ```xml
+
 <bean id="user" class="com.shisan.pojo.User">
     <property name="name" value="十三"/>
 </bean>
 ```
+
 2.使用有参构造
 
 - 下标赋值
@@ -156,4 +159,36 @@ bean = 对象 id= 变量名 class = new的对象 property相当于给对象中�
     <constructor-arg name="name" value="十三"/>
 </bean>
 ```
+
 总结：在配置文件加载的时候，容器中管理的对象就已经初始化了！！！
+
+## 5.Spring配置
+
+- 别名：
+
+```xml
+<!--别名，如果添加了别名，我们可以使用别名获取对象-->
+<alias name="user" alias="user2"/>
+```
+
+- Bean的配置信息
+
+1. id ：bean 的唯一标识没就是相当于学的对象名
+2. class ： bean 对象所对应的全限定名： 包名 + 类名
+3. name ： 也就是别名，而且name可以给取多个别名
+
+```xml
+<!--bean的配置-->
+<bean id="user" class="com.shisan.pojo.User" name="user1 user2 user3 user4">
+    <constructor-arg name="name" value="十三"/>
+</bean>
+```
+
+- import
+
+一般用于团队开发，它可以将多个配置文件，导入合并为一个 在applicationContext.xml中
+![img.png](img.png)
+  ```xml
+
+<import resource="beans.xml"/>
+  ```

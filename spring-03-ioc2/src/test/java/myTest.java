@@ -8,7 +8,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class myTest {
     public static void main(String[] args) {
-        ApplicationContext context = new ClassPathXmlApplicationContext("bean.xml");
+        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
         User user = (User) context.getBean("user");
         System.out.println(user.toString());
     }
