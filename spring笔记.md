@@ -359,3 +359,84 @@ info={学号=022300200240, 性别=男, 班级=20级软件工程2班})
 ```
 
 ![img_1.png](img_1.png)
+**第三方**
+
+p命名标签和c命名标签
+
+- 实体类User
+
+```java
+package com.shisan.pojo;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/19 15:49
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class User {
+    private String name;
+    private Integer age;
+}
+
+```
+
+- userBean.xml配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--p命名空间注入 可以直接注入属性的值-->
+    <bean id="user" class="com.shisan.pojo.User" p:name="徐磊" p:age="22"/>
+    <!--c命名空间注入，通过构造器注入，construct-args -->
+    <bean id="user2" class="com.shisan.pojo.User" c:name="徐十三" c:age="20"/>
+
+</beans>
+```
+
+- 测试
+
+```
+@Test
+public void userTest(){
+   ApplicationContext context=new ClassPathXmlApplicationContext("userBean.xml");
+   //  User user = (User) context.getBean("user");
+   User user=context.getBean("user2",User.class); // 显示的声明对象类型，就不用强转
+   System.out.println(user);
+}
+```
+
+**注意:** p命名和c命名需要导入xml约束
+
+```
+xmlns:p="http://www.springframework.org/schema/p"
+xmlns:c="http://www.springframework.org/schema/c"
+
+```
+
+**Bean的作用域**
+![img_2.png](img_2.png)
+1.单例模式（Spring默认）
+
+```xml
+
+<bean id="user2" class="com.shisan.pojo.User" c:name="徐十三" c:age="20" scope="singleton"/>
+```
+
+2.原型模式：每次从容器中get的时候，都产生一个新对象！
+
+```xml
+
+<bean id="user2" class="com.shisan.pojo.User" c:name="徐十三" c:age="20" scope="prototype"/>
+```
+3.其余的request、session、application这些只能在web开发中使用！

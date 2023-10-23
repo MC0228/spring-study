@@ -8,10 +8,6 @@
     <!--p命名空间注入 可以直接注入属性的值-->
     <bean id="user" class="com.shisan.pojo.User" p:name="徐磊" p:age="22"/>
     <!--c命名空间注入，通过构造器注入，construct-args -->
-<<<<<<< HEAD
-    <bean id="user2" class="com.shisan.pojo.User" c:name="徐十三" c:age="20" scope="singleton"/>
-=======
-    <bean id="user2" class="com.shisan.pojo.User" c:name="徐十三" c:age="20"/>
->>>>>>> origin/master
+    <bean id="user2" class="com.shisan.pojo.User" c:name="徐十三" c:age="20" scope="prototype"/>
 
 </beans>
