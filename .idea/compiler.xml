@@ -11,6 +11,7 @@
         <module name="spring-02-hellospring" />
         <module name="spring-01-ioc1" />
         <module name="spring-04-di" />
+        <module name="spring-05-Autowired" />
       </profile>
     </annotationProcessing>
   </component>

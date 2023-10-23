@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--byType-->
+    <!--<bean class="com.shisan.pojo.Cat"/>
+    <bean class="com.shisan.pojo.Dog"/>
+-->
+    <!--
+    byName
+    -->
+    <bean id="cat1" class="com.shisan.pojo.Cat"/>
+    <bean id="dog2" class="com.shisan.pojo.Dog"/>
+    <bean id="cat11" class="com.shisan.pojo.Cat"/>
+    <bean id="dog22" class="com.shisan.pojo.Dog"/>
+
+
+    <!--
+    byName：会自动在容器中寻找和Set中注入的对象名和所有唯一id中的值相等的bean
+    byType：会自动在容器中寻找和Set中注入的类型和相等的bean
+    -->
+    <bean id="people" class="com.shisan.pojo.People">
+        <property name="name" value="十三"/>
+
+    </bean>
+
+    <!--开启注解支持-->
+    <context:annotation-config/>
+</beans>

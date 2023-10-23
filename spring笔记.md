@@ -439,4 +439,221 @@ xmlns:c="http://www.springframework.org/schema/c"
 
 <bean id="user2" class="com.shisan.pojo.User" c:name="徐十三" c:age="20" scope="prototype"/>
 ```
+
 3.其余的request、session、application这些只能在web开发中使用！
+
+## 7.Bean的自动装配
+
+- 自动装配是Spring的满足bean依赖的一种方式
+- Spring会在上下文自动寻找，并自动给bean装配属性
+
+在Spring中有3中装配的方式
+
+1、xml中显示的通过bean的来注入**
+
+```xml
+
+<bean id="cat" class="com.shisan.pojo.Cat"/>
+<bean id="dog" class="com.shisan.pojo.Dog"/>
+
+<bean id="people" class="com.shisan.pojo.People">
+<property name="name" value="十三"/>
+<property name="cat" ref="cat"/>
+<property name="dog" ref="dog"/>
+</bean>
+```
+
+2、Java中显示配置
+
+**byName:**
+
+```xml
+
+<bean id="cat" class="com.shisan.pojo.Cat"/>
+<bean id="dog" class="com.shisan.pojo.Dog"/>
+
+<bean id="people" class="com.shisan.pojo.People" autowire="byName">
+<property name="name" value="十三"/>
+</bean>
+
+```
+
+**byType**
+
+```xml
+
+<bean class="com.shisan.pojo.Cat"/>
+<bean class="com.shisan.pojo.Dog"/>
+
+        <!--
+        byName：会自动在容器中寻找和Set中注入的对象名和所有唯一id中的值相等的bean
+        byType：会自动在容器中寻找和Set中注入的类型和相等的bean
+        -->
+<bean id="people" class="com.shisan.pojo.People" autowire="byType">
+<property name="name" value="十三"/>
+
+</bean>
+```
+
+- 小结：
+
+  1.byName的时候，需要确保所有的bean的id唯一，并且这个bean需要和自动自动注入的属性的set方法的值一致。
+
+  2.byName的时候，需要确保所有的bean的class唯一，并且这个bean需要和自动自动注入的属性的set方法的类型一致。
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/23 15:31
+ */
+public class Cat {
+    public void shout() {
+        System.out.println("我们一起学猫叫，喵喵喵……");
+    }
+}
+```
+
+```java
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/23 15:32
+ */
+public class Dog {
+    public void shout() {
+        System.out.println("汪疯唱歌……");
+    }
+}
+```
+
+```java
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/23 15:33
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class People {
+    private Dog dog;
+    private Cat cat;
+    private String name;
+}
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--byType-->
+    <bean class="com.shisan.pojo.Cat"/>
+    <bean class="com.shisan.pojo.Dog"/>
+
+    <!--
+    byName
+    <bean id="cat" class="com.shisan.pojo.Cat"/>
+    <bean id="dog" class="com.shisan.pojo.Dog"/>
+    -->
+    <!--
+    byName：会自动在容器中寻找和Set中注入的对象名和所有唯一id中的值相等的bean
+    byType：会自动在容器中寻找和Set中注入的类型和相等的bean
+    -->
+    <bean id="people" class="com.shisan.pojo.People" autowire="byType">
+        <property name="name" value="十三"/>
+
+    </bean>
+
+</beans>
+```
+
+**使用注解实现装配**
+
+导入context约束
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+
+</beans>
+```
+
+**@Autowired**
+
+这个属性上使用，也可以用在set上使用
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/23 15:33
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class People {
+    @Autowired
+    private Dog dog;
+    @Autowired
+    private Cat cat;
+    private String name;
+}
+```
+
+    @Nullalbe 字段标志的注解，说明该字段可为null
+
+如果@Autowird自动装配环境比较复杂，有多个id和class的对象bean。自动装配无法通过一个注解完成的时候。 可以使用@Qualifier(value= ”dagXX“ )来配合使用，指定唯一的id对象
+
+```java
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/23 15:33
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class People {
+    @Autowired
+    @Qualifier(value = "dog22")
+    private Dog dog;
+    @Autowired
+    @Qualifier(value = "cat1")
+    private Cat cat;
+    private String name;
+}
+
+```
+
+@Resource(name="dogXX")也可以使用
+**小结：**@Resource和@Autowired的区别
+
+- 都是用来自动装配的，都可以放在属性字段上
+- @Autowired通过byType的方式实现，而且必须要求这个对象存在。
+- @Resource 默认是通过byName的方式实现的，通过找不到名字，就会按照byType来实现！两者都不就报错
+- 执行顺序的不同：@Autowired是通过byType的方式实现，@Resource是通过byName的方式实现
+
+
+
+
+
+
+
+
