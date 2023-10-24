@@ -804,8 +804,104 @@ public class myTest {
 
 这种纯java配置方式
 
+## 10.代理模式
 
+**代理分类：**
 
+- 动态代理
+- 静态代理
+
+### **静态代理**
+
+**角色分析：** 租房为例子
+
+- 抽象角色：一般会使用接口或者抽象类来解决（租房）
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/24 16:46
+ */
+// 租房子的功能
+public interface Rent {
+    public void rent();
+}
+```
+
+- 真实角色：被代理的角色（房东）
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/24 16:45
+ */
+public class Host implements Rent {
+    @Override
+    public void rent() {
+        System.out.println("房东太太出租房子");
+    }
+}
+```
+
+- 代理角色：代理真实角色，代理后增加一些附属操作(中介)
+
+```java
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Proxy implements Rent {
+    private Host host;
+
+    @Override
+    public void rent() {
+        host.rent();
+        before();
+        seeing();
+        after();
+    }
+
+    public void before() {
+        System.out.println("中介带你看房子");
+    }
+
+    public void seeing() {
+        System.out.println("中介带你签合同");
+
+    }
+
+    public void after() {
+        System.out.println("中介收租赁金");
+    }
+
+}
+```
+
+- 客户：访问代理对象的人(租户)
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/24 16:46
+ */
+public class Client {
+    public static void main(String[] args) {
+        Proxy proxy = new Proxy(new Host());
+        proxy.rent();
+    }
+}
+```
+
+**代理模式的好处：**
+
+- 可以使真实角色的操作更加纯粹，不需要去关注一些公共的业务
+
+- 公共业务交给代理角色,实现了业务的分工
+- 公共业务发生拓展的时候，方便集中管理
+
+**代理模式的缺点：**
+
+- 一个真实的角色会产出一个代理角色，代码量会增加翻倍~开发效率低
 
 
 
