@@ -739,9 +739,70 @@ xml与注解
 ```xml
     <!--指定要扫面的包，这些包下的注解就会生效-->
 <context:component-scan base-package="com.shisan"/>
-
 <context:annotation-config/>
 ```
+
+## 9.Java方式配置Spring
+
+JavaConfig Spring的一个子项目，在spring4之后，成为核心功能
+
+配置类
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/24 15:30
+ */
+// 这个也是Spring容器托管，注册到容器中，本身也是一个@component
+// @Configuration代表这是一个配置类，相当于bean.xml
+@Configuration
+@ComponentScan("com.shisan.pojo")
+public class UserConfig {
+    /*
+     * 注册一个bean，等价于xml中的bean标签
+     * 方法的名字，等价于bean标签中的id
+     * 返回值，等价于bean中的class
+     * */
+    @Bean
+    public User user() {
+        return new User();  // 要注入到容器中的对象
+    }
+}
+```
+
+实体类
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/24 15:29
+ */
+@Data
+public class User {
+    @Value("徐十三")
+    private String name;
+}
+```
+
+测试类
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/24 15:33
+ */
+public class myTest {
+    @Test
+    public void test() {
+        // 使用config完全取代了xml的方式，通过配置类的class对象加载！
+        ApplicationContext context = new AnnotationConfigApplicationContext(UserConfig.class);
+        User user = context.getBean("user", User.class);
+        System.out.println(user.toString());
+    }
+}
+```
+
+这种纯java配置方式
 
 
 
