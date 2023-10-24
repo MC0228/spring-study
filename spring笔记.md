@@ -650,6 +650,99 @@ public class People {
 - @Resource 默认是通过byName的方式实现的，通过找不到名字，就会按照byType来实现！两者都不就报错
 - 执行顺序的不同：@Autowired是通过byType的方式实现，@Resource是通过byName的方式实现
 
+## 8.使用注解开发
+
+在spring4之后，必须要保证有aop的导入包
+
+```xml
+
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.3.29</version>
+</dependency>
+```
+
+在使用注解的时候需要在xml中添加context的约束
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--指定要扫面的包，这些包下的注解就会生效-->
+    <context:component-scan base-package="com.shisan"/>
+
+    <context:annotation-config/>
+</beans>
+```
+
+- 1、属性的注入
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/24 7:58
+ */
+// @Component相当于 <bean id = "user" class = "com.shisan.pojo.User"> 完成自动装配
+@Component
+@Scope("singleton") // 作用域注解singleton or prototype
+public class User {
+    //    public String name = "徐十三";
+    @Value("徐十三") // 相当于<property name="name" value="徐十三"
+    public String name;
+}
+```
+
+- 2、衍生的注解 @Component有几个衍生注解，针对不同的层来分。
+    - dao ---@Repository
+    - service ---@Service
+    - controller ---@Controller
+
+这四个注解功能一样，都是代表将某个类注入到容器中
+
+- 3、作用域@Scope("singleton")
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/24 7:58
+ */
+// @Component相当于 <bean id = "user" class = "com.shisan.pojo.User"> 完成自动装配
+@Component
+@Scope("singleton") // 作用域注解singleton or prototype
+public class User {
+    //    public String name = "徐十三";
+    @Value("徐十三") // 相当于<property name="name" value="徐十三"
+    public String name;
+}
+
+```
+
+**小结：**
+
+xml与注解
+
+- xml更加万能，维护简单
+- 注解不是同类型的对象使用不了，维护复杂。
+
+最佳的配合实践：
+
+- xml用来管理bean
+- 注解用来完成属性的注入
+
+```xml
+    <!--指定要扫面的包，这些包下的注解就会生效-->
+<context:component-scan base-package="com.shisan"/>
+
+<context:annotation-config/>
+```
+
 
 
 
