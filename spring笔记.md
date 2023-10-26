@@ -1185,3 +1185,169 @@ public class DiyPointCut {
     </aop:config>
 </beans>
 ```
+
+## 12.整合Mybatis
+
+帮助文档：https://mybatis.org/spring/zh/
+**Maven依赖**
+
+```xml
+
+<dependencies>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>8.0.31</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>6.0.11</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.mybatis</groupId>
+        <artifactId>mybatis</artifactId>
+        <version>3.5.13</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jdbc</artifactId>
+        <version>6.0.11</version>
+    </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.19</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.mybatis</groupId>
+        <artifactId>mybatis-spring</artifactId>
+        <version>3.0.2</version>
+    </dependency>
+</dependencies>
+```
+
+**创建实体类User**
+
+```java
+import lombok.Data;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 17:24
+ */
+@Data
+public class User {
+    private Integer id;
+    private String name;
+    private String password;
+}
+```
+
+**UserMapper**
+
+```java
+import com.shisan.pojo.User;
+
+import java.util.List;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 17:31
+ */
+public interface UserMapper {
+    List<User> findAll();
+}
+```
+
+**UserMapper.xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shisan.mapper.UserMapper">
+
+    <select id="findAll" resultType="com.shisan.pojo.User">
+        select *
+        from USER;
+    </select>
+</mapper>
+```
+
+**核心配置文件mybatis-config.xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!--configuration核心配置文件-->
+<configuration>
+    <typeAliases>
+        <package name="com.shisan.pojo"/>
+    </typeAliases>
+    <!--数据库连接信息配置-->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/mybatis"/>
+                <property name="username" value="root"/>
+                <property name="password" value="root"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <mapper class="com.shisan.mapper.UserMapper"/>
+    </mappers>
+</configuration>
+```
+
+**Main**
+
+```java
+import com.shisan.mapper.UserMapper;
+import com.shisan.pojo.User;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 17:44
+ */
+public class Main {
+    public static void main(String[] args) throws IOException {
+        InputStream in = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactory sessionFactory = new SqlSessionFactoryBuilder().build(in);
+        SqlSession sqlSession = sessionFactory.openSession(true);
+
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        List<User> users = mapper.findAll();
+        for (User user : users) {
+            System.out.println(user);
+        }
+    }
+}
+```
