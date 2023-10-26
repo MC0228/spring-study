@@ -897,13 +897,291 @@ public class Client {
 - 可以使真实角色的操作更加纯粹，不需要去关注一些公共的业务
 
 - 公共业务交给代理角色,实现了业务的分工
-- 公共业务发生拓展的时候，方便集中管理                         
+- 公共业务发生拓展的时候，方便集中管理
 
 **代理模式的缺点：**
 
 - 一个真实的角色会产出一个代理角色，代码量会增加翻倍~开发效率低
 
+### 动态代理
 
+动态代理和静态代理角色一样，不过动态代理类是动态生成的，通过反射
 
+_动态代理：_
 
+- 基于接口：JDK的动态代理【使用】
+- 基于类：cglib
+- Java字节码
 
+InvocationHandler
+**Proxy**
+
+```java
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 14:15
+ */
+public class ProxyAgency {
+    public static Object createProxy(Object client) {
+        return Proxy.newProxyInstance(
+                client.getClass().getClassLoader(),
+                client.getClass().getInterfaces(),
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        System.out.println("中介：开始处理房租交易。");
+                        Object result = method.invoke(client, args);
+                        System.out.println("中介：房租交易完成。");
+                        return result;
+                    }
+                }
+        );
+    }
+}
+```
+
+**Tenant**
+
+```java
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 10:57
+ */
+// 租户类
+public class Tenant implements Renter {
+    @Override
+    public void rentHouse() {
+        System.out.println("租户：我需要一套公寓.");
+    }
+}
+```
+
+**HouseOwner**
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 10:58
+ */
+// 房东类
+public class HouseOwner implements Landlord {
+    @Override
+    public void provideHouse() {
+        System.out.println("房东：我有一套公寓出租。");
+    }
+}
+```
+
+**Main**
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 11:05
+ */
+public class Main {
+    public static void main(String[] args) {
+        Tenant tenant = new Tenant();
+        Landlord landlord = new HouseOwner();
+
+        Renter renter = (Renter) ProxyAgency.createProxy(tenant);
+        Landlord rentalAgencyForLandlord = (Landlord) ProxyAgency.createProxy(landlord);
+
+        renter.rentHouse();
+        rentalAgencyForLandlord.provideHouse();
+
+    }
+}
+```
+
+## 11.AOP
+
+导入相关aop依赖
+
+```xml
+
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.19</version>
+</dependency>
+```
+
+### spring API接口
+
+**applicationContext.xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--注册bean-->
+    <bean id="userService" class="com.shisan.service.UserServiceImpl"/>
+    <bean id="log" class="com.shisan.log.Log"/>
+    <bean id="afterLog" class="com.shisan.log.AfterLog"/>
+    <!--
+    方式一：使用spring API接口
+    配置aop：需要导入aop约束
+    -->
+    <aop:config>
+        <!--切入点：expression：表达式 execution（要执行的位置！ * * * * *）-->
+        <aop:pointcut id="pointcut" expression="execution(* com.shisan.service.UserServiceImpl.*(..))"/>
+
+        <!--执行环绕增加-->
+        <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>
+        <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>
+    </aop:config>
+
+</beans>
+```
+
+**Log**
+
+```java
+import org.springframework.aop.MethodBeforeAdvice;
+
+import java.lang.reflect.Method;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 15:02
+ */
+public class Log implements MethodBeforeAdvice {
+    /**
+     * @param method 要执行的目标对象的方法
+     * @param args   参数
+     * @param target 目标对象
+     * @throws Throwable
+     */
+    @Override
+    public void before(Method method, Object[] args, Object target) throws Throwable {
+        System.out.println(target.getClass().getName() + "的" + method.getName() + "被执行了");
+    }
+}
+```
+
+**AfterLog**
+
+```java
+import org.springframework.aop.AfterReturningAdvice;
+
+import java.lang.reflect.Method;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 15:07
+ */
+public class AfterLog implements AfterReturningAdvice {
+    @Override
+    public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
+        System.out.println("执行了" + method.getName() + "方法，返回结果为" + returnValue);
+    }
+}
+```
+
+**UserServiceImpl**
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 15:00
+ */
+public class UserServiceImpl implements UserService {
+    @Override
+    public void add() {
+        System.out.println("增加用户");
+    }
+
+    @Override
+    public void delete() {
+        System.out.println("删除用户");
+    }
+
+    @Override
+    public void update() {
+        System.out.println("更新用户信息");
+    }
+
+    @Override
+    public void find() {
+        System.out.println("查询用户");
+    }
+}
+```
+
+**Main**
+
+```java
+import com.shisan.service.UserService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 15:35
+ */
+public class Main {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+        // 动态代理的是接口
+        UserService userService = (UserService) context.getBean("userService");
+        userService.add();
+    }
+}
+```
+
+### 自定义实现AOP【主要是切面定义】
+
+**DidPointCut**
+
+```java
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 16:16
+ */
+public class DiyPointCut {
+    public void before() {
+        System.out.println("=======执行前=======");
+    }
+
+    public void after() {
+        System.out.println("=======执行后=======");
+    }
+}
+```
+
+**applicationContext.xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--注册bean-->
+    <bean id="userService" class="com.shisan.service.UserServiceImpl"/>
+    <bean id="log" class="com.shisan.log.Log"/>
+    <bean id="afterLog" class="com.shisan.log.AfterLog"/>
+    <!--方式二：自定义类-->
+    <bean id="diy" class="com.shisan.diy.DiyPointCut"/>
+    <aop:config>
+        <!--自定义切面 ref 要引用的类-->
+        <aop:aspect ref="diy">
+            <!--切入点-->
+            <aop:pointcut id="point" expression="execution(* com.shisan.service.UserServiceImpl.*(..))"/>
+            <!--通知-->
+            <aop:before method="before" pointcut-ref="point"/>
+            <aop:after method="after" pointcut-ref="point"/>
+        </aop:aspect>
+    </aop:config>
+</beans>
+```
