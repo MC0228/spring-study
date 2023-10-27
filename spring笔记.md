@@ -1498,4 +1498,198 @@ public class MyTest {
 }
 ```
 
-**6.测试运行**
+## 13.声明式事务
+
+### 事务：
+
+- 把一组业务当成一个业务来做；要么都成功，要么都失败
+- 事务在项目开发中，十分重要，涉及到数据的一致性问题
+- 确保完整性和一致性
+
+**事务ACID**
+
+- 原子性
+- 一致性
+- 隔离性
+    - 多个事务看你同时操作同一个资源，防止数据损坏
+
+- 持久性
+- 事务一旦提交，无论系统发生什么问题，结果都不会在被影响，持久化的写道存储器中！
+
+Spring中的事务管理
+
+- 声明式事务
+- 编程式事务
+
+**声明式事务**
+**spring-dao.xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--DataSource:使用Spring的数据源替换mybatis的配置 c3p0 dbcp druid
+    这里使用Spring提供的JDBC： org.springframework.jdbc.datasource.DriverManagerDataSource-->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/mybatis"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+    </bean>
+
+    <!--sqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!--绑定Mybatis配置文件-->
+        <property name="configLocation" value="mybatis-config.xml"/>
+        <property name="mapperLocations" value="com/shisan/mapper/*.xml"/>
+    </bean>
+
+    <!--    sqlSessionTemplate:就是我们使用的SqlSession-->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+
+    <!--配置声明式事务-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--结合AOP实现事务的注入
+    配置事务通知：-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <!--配置事务的传播性： new propagation-->
+        <tx:attributes>
+            <tx:method name="add" propagation="REQUIRED"/>
+            <tx:method name="deleteById" propagation="REQUIRED"/>
+            <tx:method name="findAll" propagation="REQUIRED"/>
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--配置事务切入-->
+    <aop:config>
+        <aop:pointcut id="txPointCut" expression="execution(* com.shisan.mapper.*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointCut"/>
+    </aop:config>
+</beans>
+```
+
+**applicationContext.xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <import resource="spring-dao.xml"/>
+
+    <!--bean-->
+    <bean id="userMapper" class="com.shisan.mapper.UserMapperImpl">
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+    </bean>
+
+</beans>
+```
+
+**Mapper**
+
+```java
+import com.shisan.pojo.User;
+
+import java.util.List;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 17:31
+ */
+public interface UserMapper {
+    List<User> findAll();
+
+    void add(User user);
+
+    void deleteById(Integer id);
+}
+
+```
+
+```java
+import com.shisan.pojo.User;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.mybatis.spring.support.SqlSessionDaoSupport;
+
+import java.util.List;
+
+/**
+ * @Author:shisan
+ * @Date:2023/10/26 20:17
+ */
+public class UserMapperImpl extends SqlSessionDaoSupport implements UserMapper {
+
+
+    @Override
+    public List<User> findAll() {
+        User user = new User();
+        user.setName("张三");
+        user.setPassword("zhang123");
+        getSqlSession().getMapper(UserMapper.class).add(user);
+        getSqlSession().getMapper(UserMapper.class).deleteById(user.getId());
+        return getSqlSession().getMapper(UserMapper.class).findAll();
+    }
+
+    @Override
+    public void add(User user) {
+        getSqlSession().getMapper(UserMapper.class).add(user);
+    }
+
+    @Override
+    public void deleteById(Integer id) {
+        getSqlSession().getMapper(UserMapper.class).deleteById(id);
+    }
+
+}
+```
+
+**UserMapper.xml**
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shisan.mapper.UserMapper">
+    <insert id="add">
+        insert into user(name, password)
+        values (#{name}, #{password})
+    </insert>
+
+    <delete id="deleteById">
+        deletes
+        from user
+        where id =
+        #{id}
+    </delete>
+
+
+    <select id="findAll" resultType="com.shisan.pojo.User">
+        select *
+        from USER;
+    </select>
+</mapper>
+```
+
+
+
+
+
+
+
+
+
